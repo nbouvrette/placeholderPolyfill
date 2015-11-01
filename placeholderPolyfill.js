@@ -9,7 +9,7 @@
  * Supports:
  *
  *  - Browsers: IE8+ and any other browsers (which will bypass the script when unnecessary).
- *  - HTML: Use of the 'placeholder' attribute on input element (only after page load).
+ *  - HTML: Use of the 'placeholder' attribute on input elements (only after page load).
  *  - CSS: Can be styled along with other standard placeholder styles.
  *
  * Limitations:
@@ -56,7 +56,7 @@ var placeholderPolyfill = function() {
     };
 
     /**
-     * Polyfill a specified element
+     * Polyfill a specified input element.
      *
      * @param {Object} element - The HTML input element to polyfill.
      */
@@ -79,18 +79,92 @@ var placeholderPolyfill = function() {
         setCustomBeforeAndAfterOnSubmitEvents(element.form);
     };
 
+    /**
+     * Polyfill a specified input element of type password.
+     *
+     * @param {Object} element - The HTML input element to polyfill.
+     */
+    var polyfillPassword = function(element) {
+        if (element.type == 'password') {
+            var placeholderElement = document.createElement('input');
+            placeholderElement.type = 'text';
+            placeholderElement.className = element.className;
+            placeholderElement.placeholder = element.placeholder;
+            activatePlaceholder(placeholderElement);
+
+            placeholderElement.onclick = function () {
+                onClickPassword(element, placeholderElement);
+            };
+
+            placeholderElement.onfocus = function () {
+                onFocusPassword(element, placeholderElement);
+            };
+
+            element.onblur = function () {
+                onBlurPassword(element, placeholderElement);
+            };
+
+            addClass(element, 'displayNone');
+            element.parentNode.insertBefore(placeholderElement, element.nextSibling);
+        }
+    };
+
+    /**
+     * Mimics placeholder behavior on a password during an onClick event.
+     *
+     * @param {Object} element - The password HTML input element to polyfill.
+     * @param {Object} placeholderElement - The placeholder input element of type text used for password polyfill.
+     */
+    var onClickPassword = function(element, placeholderElement) {
+        addClass(placeholderElement, 'displayNone');
+        removeClass(element, 'displayNone');
+        element.focus();
+    };
+
+    /**
+     * Mimics placeholder behavior on a password during an onFocus event.
+     *
+     * @param {Object} element - The password HTML input element to polyfill.
+     * @param {Object} placeholderElement - The placeholder input element of type text used for password polyfill.
+     */
+    var onFocusPassword = function(element, placeholderElement) {
+        onClickPassword(element, placeholderElement);
+    };
+
+    /**
+     * Mimics placeholder behavior on a password during an onBlue event.
+     *
+     * @param {Object} element - The HTML input element to polyfill.
+     * @param {Object} placeholderElement - The placeholder input element of type text used for password polyfill.
+     */
+    function onBlurPassword(element, placeholderElement) {
+        if (!element.value.length) {
+            addClass(element, 'displayNone');
+            removeClass(placeholderElement, 'displayNone');
+        }
+    }
+
+    /**
+     * Activate the placeholder polyfill on a specified element
+     *
+     * @param {Object} element - The HTML input element to polyfill.
+     */
     var activatePlaceholder = function(element) {
         element.value = element.placeholder;
         addClass(element, placeholderClassName);
         disableTextSelection(element);
     };
 
+    /**
+     * Deactivate the placeholder polyfill on a specified element
+     *
+     * @param {Object} element - The HTML input element to polyfill.
+     */
     var deactivatePlaceholder = function(element) {
         element.value = '';
         removeClass(element, placeholderClassName);
         enableTextSelection(element);
     };
-
 
     /**
      * Mimics placeholder behavior during an onClick event.
@@ -303,7 +377,11 @@ var placeholderPolyfill = function() {
         var inputElementsWithPlaceholders = getElementsWithPlaceholders();
         for (var iterator = 0; iterator < inputElementsWithPlaceholders.length; iterator++) {
             var element = inputElementsWithPlaceholders[iterator];
-            polyfill(element);
+            if (element.type == 'password') {
+                polyfillPassword(element);
+            } else {
+                polyfill(element); // Default polyfill.
+            }
         }
     }
 };
@@ -325,6 +403,3 @@ function executeAfterPageLoad(newFunction) {
     }
 }
 executeAfterPageLoad(placeholderPolyfill);
-
-
-
