@@ -15,7 +15,7 @@
  * Limitations:
  *
  * This script use custom 'onsubmit' events on forms to make sure placeholder values are not submitted by users. This
- * might cause conflicts with other scripts using form 'onsubmit' events but can be easily mitigate by implementing the
+ * might cause conflicts with other scripts using form 'onsubmit' events but can be easily mitigated by implementing the
  * new 'beforeOnSubmit' and 'afterOnSubmit' events which offer more flexibility than the standard events.
  *
  * Usage:
@@ -92,12 +92,8 @@ var placeholderPolyfill = function() {
             placeholderElement.placeholder = element.placeholder;
             activatePlaceholder(placeholderElement);
 
-            placeholderElement.onclick = function () {
-                onClickPassword(element, placeholderElement);
-            };
-
-            placeholderElement.onfocus = function () {
-                onFocusPassword(element, placeholderElement);
+            placeholderElement.onclick = placeholderElement.onfocus = function () {
+                onClickOrOnFocusPassword(element, placeholderElement);
             };
 
             element.onblur = function () {
@@ -110,25 +106,15 @@ var placeholderPolyfill = function() {
     };
 
     /**
-     * Mimics placeholder behavior on a password during an onClick event.
+     * Mimics placeholder behavior on a password during an onClick or an onFocus event.
      *
      * @param {Object} element - The password HTML input element to polyfill.
      * @param {Object} placeholderElement - The placeholder input element of type text used for password polyfill.
      */
-    var onClickPassword = function(element, placeholderElement) {
+    var onClickOrOnFocusPassword = function(element, placeholderElement) {
         addClass(placeholderElement, 'displayNone');
         removeClass(element, 'displayNone');
         element.focus();
-    };
-
-    /**
-     * Mimics placeholder behavior on a password during an onFocus event.
-     *
-     * @param {Object} element - The password HTML input element to polyfill.
-     * @param {Object} placeholderElement - The placeholder input element of type text used for password polyfill.
-     */
-    var onFocusPassword = function(element, placeholderElement) {
-        onClickPassword(element, placeholderElement);
     };
 
     /**
